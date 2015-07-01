@@ -26,12 +26,11 @@ define contrail::lib::upgrade-kernel(
             ->
             package { $image_extra : ensure => present, }
             ->
-            exec { "upgrade-kernel-reboot":
-                command => "echo upgrade-kernel-reboot >> /etc/contrail/contrail_common_exec.out && reboot -f now",
-                provider => shell,
-                logoutput => $contrail_logoutput,
-                unless => ["grep -qx upgrade-kernel-reboot /etc/contrail/contrail_common_exec.out"]
-            }
+	    reboot { 'after':
+	      apply => "immediately",
+	      timeout => 0,
+	      subscribe       => Package[$image_extra],
+	    }
         } else {
             if ($contrail_kernel_version == "" ) {
                 $contrail_dist_kernel_version = "3.13.0-34"
@@ -52,12 +51,11 @@ define contrail::lib::upgrade-kernel(
             ->
             package { $image : ensure => present, }
             ->
-            exec { "upgrade-kernel-reboot":
-                command => "echo upgrade-kernel-reboot >> /etc/contrail/contrail_common_exec.out && reboot -f now",
-                provider => shell,
-                logoutput => $contrail_logoutput,
-                unless => ["grep -qx upgrade-kernel-reboot /etc/contrail/contrail_common_exec.out"]
-            }
+	    reboot { 'after':
+	      subscribe       => Package[$image],
+	      apply => "immediately",
+	      timeout => 0,
+	    }
         }
     } else {
         #TODO for other flavours do nothing
